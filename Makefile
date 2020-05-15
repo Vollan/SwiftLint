@@ -161,3 +161,23 @@ endif
 
 %:
 	@:
+	
+	spm:
+	sed -i "" "s/swift-latest/$(SWIFT_SNAPSHOT)/" Source/Clang_C/module.modulemap
+	$(SPM) $(SPMFLAGS) || (\
+		echo "SPM does not use Package.swift. So now removing unnecesory directories in 'Packages/*' that cause build error.";\
+		rm -rf Packages/SourceKitten-*/Source/sourcekitten;\
+		rm -rf Packages/SourceKitten-*/Source/SourceKittenFrameworkTests;\
+		rm -rf Packages/YamlSwift-*/YamlTests;\
+		echo "Runs SPM again.";\
+	) && $(SPM) $(SPMFLAGS)
+	sed -i "" "s/$(SWIFT_SNAPSHOT)/swift-latest/" Source/Clang_C/module.modulemap
+
+spm_test: spm
+	.build/Debug/SwiftLintFrameworkTests
+
+spm_clean:
+	$(SPM) --clean
+
+spm_clean_dist:
+	$(SPM) --clean=dist
